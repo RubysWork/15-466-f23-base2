@@ -16,12 +16,12 @@ EXPORT_SCENE=export-scene.py
 DIST=../dist
 
 all : \
-	$(DIST)/brunch.pnct \
-	$(DIST)/brunch.scene \
+	$(DIST)/dolphin.pnct \
+	$(DIST)/dolphin.scene \
 
 
-$(DIST)/brunch.scene : brunch.blend $(EXPORT_SCENE)
+$(DIST)/dolphin.scene : dolphin.blend $(EXPORT_SCENE)
 	$(BLENDER) --background --python $(EXPORT_SCENE) -- '$<':Main '$@'
 
-$(DIST)/brunch.pnct : brunch.blend $(EXPORT_MESHES)
+$(DIST)/dolphin.pnct : dolphin.blend $(EXPORT_MESHES)
 	$(BLENDER) --background --python $(EXPORT_MESHES) -- '$<':Main '$@'

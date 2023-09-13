@@ -16,7 +16,7 @@ struct PlayMode : Mode
 	virtual bool handle_event(SDL_Event const &, glm::uvec2 const &window_size) override;
 	virtual void update(float elapsed) override;
 	virtual void draw(glm::uvec2 const &drawable_size) override;
-
+	virtual float distance(glm::uvec3 a, glm::uvec3 b);
 	//----- game state -----
 
 	// input tracking:
@@ -29,8 +29,8 @@ struct PlayMode : Mode
 	// local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
 
-	// hexapod leg to wobble:
 	/*
+	// hexapod leg to wobble:
 	Scene::Transform *hip = nullptr;
 	Scene::Transform *upper_leg = nullptr;
 	Scene::Transform *lower_leg = nullptr;
@@ -39,6 +39,12 @@ struct PlayMode : Mode
 	glm::quat lower_leg_base_rotation;
 	float wobble = 0.0f;
 	*/
-	// camera:
+
+	// object
+	Scene::Transform *dolphin = nullptr;
+	Scene::Transform *fish = nullptr;
+	Scene::Transform *coral = nullptr;
+
+		// camera:
 	Scene::Camera *camera = nullptr;
 };

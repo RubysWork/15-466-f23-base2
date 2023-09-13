@@ -9,7 +9,7 @@
 #include "data_path.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
-
+#include <cmath>
 #include <random>
 
 // define a vao
@@ -17,13 +17,13 @@ GLuint hexapod_meshes_for_lit_color_texture_program = 0;
 // Load mesh
 Load<MeshBuffer> hexapod_meshes(LoadTagDefault, []() -> MeshBuffer const *
 								{
-	MeshBuffer const *ret = new MeshBuffer(data_path("brunch.pnct"));
+	MeshBuffer const *ret = new MeshBuffer(data_path("dolphin.pnct"));
 	hexapod_meshes_for_lit_color_texture_program = ret->make_vao_for_program(lit_color_texture_program->program);
 	return ret; });
 
 // load scene
 Load<Scene> hexapod_scene(LoadTagDefault, []() -> Scene const *
-						  { return new Scene(data_path("brunch.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name)
+						  { return new Scene(data_path("dolphin.scene"), [&](Scene &scene, Scene::Transform *transform, std::string const &mesh_name)
 											 {
 												 Mesh const &mesh = hexapod_meshes->lookup(mesh_name);
 
@@ -65,6 +65,18 @@ hip_base_rotation = hip->rotation;
 upper_leg_base_rotation = upper_leg->rotation;
 lower_leg_base_rotation = lower_leg->rotation;
 */
+	// get pointers to objects
+	//  iterate all transform in the scene
+	for (auto &transform : scene.transforms)
+	{
+		if (transform.name == "Dolphin")
+			dolphin = &transform;
+		else if (transform.name == "Fish")
+			fish = &transform;
+		else if (transform.name == "Coral")
+			coral = &transform;
+	}
+
 	// get pointer to camera for convenience:
 	if (scene.cameras.size() != 1)
 		throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -175,6 +187,19 @@ void PlayMode::update(float elapsed)
 														glm::radians(10.0f * std::sin(wobble * 3.0f * 2.0f * float(M_PI))),
 														glm::vec3(0.0f, 0.0f, 1.0f));
 */
+
+	// fish trigger
+	//(x-x)2+(y-y)2+(z-z)2
+	glm::vec3 dolphinWPos = glm::mat4(dolphin->make_local_to_world()) * glm::vec4(dolphin->position, 1.0f);
+
+	std::cout << "dolphin:" << dolphinWPos.x << "," << dolphinWPos.y << "," << dolphinWPos.z << std::endl;
+	std::cout << "fish:" << fish->position.x << std::endl;
+	// std::cout << "camera:" << camera->transform->position.x << std::endl;
+	if (distance(dolphinWPos, fish->position) < 1)
+	{
+		std::cout << "catch!!" << std::endl;
+	}
+
 	// move camera:
 	{
 
@@ -257,4 +282,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size)
 						glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 						glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 	}
+}
+
+float PlayMode::distance(glm::uvec3 a, glm::uvec3 b)
+{
+	float dis = (float)sqrt(pow(abs((int)(a.x - b.x)), 2) + pow(abs((int)(a.y - b.y)), 2) + pow(abs((int)(a.z - b.z)), 2));
+	return dis;
 }
