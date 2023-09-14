@@ -1,14 +1,15 @@
 # Ocean Guardian
 
-Author: Yue Wang
+**Author: Yue Wang**
 
-Design: You are a dolphin who catch fish to get energy and use the energy to clean the coral.
+**Design:**
 
-Screen Shot:
+You are a dolphin who catch fish to get energy and use the energy to clean the coral.
+
+**Screen Shot:**
 ![Screen Shot](screenshot.png)
-![Screen Shot](screenshot.png)
 
-How To Play:
+**How To Play:**
 
 Goal: clean 5 corals
 
