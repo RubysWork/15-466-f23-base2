@@ -3,7 +3,7 @@
 #include "Scene.hpp"
 
 #include <glm/glm.hpp>
-
+#include <array>
 #include <vector>
 #include <deque>
 
@@ -24,7 +24,7 @@ struct PlayMode : Mode
 	{
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up;
+	} left, right, down, up, E;
 
 	// local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
@@ -42,9 +42,38 @@ struct PlayMode : Mode
 
 	// object
 	Scene::Transform *dolphin = nullptr;
-	Scene::Transform *fish = nullptr;
-	Scene::Transform *coral = nullptr;
+	Scene::Transform *sea_surface = nullptr;
+	Scene::Transform *ground = nullptr;
 
-		// camera:
+	typedef struct Fish
+	{
+		int index = 0;
+		Scene::Transform *transform = nullptr;
+	} Fish;
+	std::array<Fish, 10> fishes;
+
+	typedef struct Coral
+	{
+		int index = 0;
+		Scene::Transform *transform = nullptr;
+	} Coral;
+	std::array<Coral, 5> corals;
+
+	typedef struct CleanCoral
+	{
+		int index = 0;
+		Scene::Transform *transform = nullptr;
+	} CleanCoral;
+	std::array<CleanCoral, 5> clean_corals;
+
+	//  camera:
 	Scene::Camera *camera = nullptr;
+	// variables
+	bool E_once = true;
+	int energy = 0;
+	int clean_coral_num = 0;
+	bool show_warning = false;
+	bool show_win = false;
+	int timer = 0;
+	bool starttimer = false;
 };
