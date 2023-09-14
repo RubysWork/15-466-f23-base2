@@ -1,15 +1,23 @@
-# (TODO: your game's title)
+# Ocean Guardian
 
-Author: (TODO: your name)
+**Author: Yue Wang**
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+**Design:**
 
-Screen Shot:
+You are a dolphin who catches fish to get energy and uses the energy to clean the coral.
 
+**Screen Shot:**
 ![Screen Shot](screenshot.png)
 
-How To Play:
+**How To Play:**
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Goal: clean 5 corals
+
+·Move - Hold mouse left button and press W/A/S/D/Q/E
+
+·Catch fish - when the dolphin touches the fish, it will catch the fish automatically
+
+·Clean coral - F (when the dolphin close to the coral)
+
 
 This game was built with [NEST](NEST.md).
