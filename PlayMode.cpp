@@ -353,7 +353,6 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			return true;
 		}
 	}
-
 	return false;
 }
 
