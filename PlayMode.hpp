@@ -24,7 +24,7 @@ struct PlayMode : Mode
 	{
 		uint8_t downs = 0;
 		uint8_t pressed = 0;
-	} left, right, down, up, E;
+	} left, right, forward, back, down, up, F;
 
 	// local copy of the game scene (so code can change it during gameplay):
 	Scene scene;
@@ -42,7 +42,6 @@ struct PlayMode : Mode
 
 	// object
 	Scene::Transform *dolphin = nullptr;
-	Scene::Transform *sea_surface = nullptr;
 	Scene::Transform *ground = nullptr;
 
 	typedef struct Fish
@@ -70,7 +69,7 @@ struct PlayMode : Mode
 	//  camera:
 	Scene::Camera *camera = nullptr;
 	// variables
-	bool E_once = true;
+	bool F_once = true;
 	int energy = 0;
 	int clean_coral_num = 0;
 	bool show_warning = false;
@@ -78,4 +77,5 @@ struct PlayMode : Mode
 	int timer = 0;
 	bool starttimer = false;
 	float wobble = 0.0f;
+	glm::quat dolphin_rotation_base;
 };

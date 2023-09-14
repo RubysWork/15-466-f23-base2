@@ -198,8 +198,6 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			clean_coral4.transform = &transform;
 			clean_corals[4] = clean_coral4;
 		}
-		else if (transform.name == "SeaSurface")
-			sea_surface = &transform;
 		else if (transform.name == "Ground")
 			ground = &transform;
 	}
@@ -213,12 +211,51 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 PlayMode::~PlayMode()
 {
 }
+/*
+bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
+{
+
+	if (evt.type == SDL_KEYDOWN)
+	{
+		if (evt.key.keysym.sym == SDLK_a)
+		{
+			std::cout << "left!" << std::endl;
+			left.downs += 1;
+			left.pressed = true;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_d)
+		{
+			std::cout << "right!" << std::endl;
+			right.downs += 1;
+			right.pressed = true;
+			return true;
+		}
+	}
+	else if (evt.type == SDL_KEYUP)
+	{
+		if (evt.key.keysym.sym == SDLK_a)
+		{
+			left.pressed = false;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_d)
+		{
+			right.pressed = false;
+			return true;
+		}
+	}
+
+	return false;
+}
+*/
 
 bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 {
 
 	if (evt.type == SDL_KEYDOWN)
 	{
+
 		if (evt.key.keysym.sym == SDLK_ESCAPE)
 		{
 			SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -236,22 +273,34 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			right.pressed = true;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_w)
+		else if (evt.key.keysym.sym == SDLK_e)
 		{
 			up.downs += 1;
 			up.pressed = true;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_s)
+		else if (evt.key.keysym.sym == SDLK_q)
 		{
 			down.downs += 1;
 			down.pressed = true;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_e)
+		else if (evt.key.keysym.sym == SDLK_w)
 		{
-			E.downs += 1;
-			E.pressed = true;
+			forward.downs += 1;
+			forward.pressed = true;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_s)
+		{
+			back.downs += 1;
+			back.pressed = true;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_f)
+		{
+			F.downs += 1;
+			F.pressed = true;
 			return true;
 		}
 	}
@@ -267,44 +316,40 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 			right.pressed = false;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_w)
+		else if (evt.key.keysym.sym == SDLK_e)
 		{
 			up.pressed = false;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_s)
+		else if (evt.key.keysym.sym == SDLK_q)
 		{
 			down.pressed = false;
 			return true;
 		}
-		else if (evt.key.keysym.sym == SDLK_e)
+		else if (evt.key.keysym.sym == SDLK_w)
 		{
-			E.pressed = false;
-			E_once = true;
+			forward.pressed = false;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_s)
+		{
+			back.pressed = false;
+			return true;
+		}
+		else if (evt.key.keysym.sym == SDLK_f)
+		{
+			F.pressed = false;
+			F.downs = true;
+			F_once = true;
 			return true;
 		}
 	}
+
 	else if (evt.type == SDL_MOUSEBUTTONDOWN)
 	{
 		if (SDL_GetRelativeMouseMode() == SDL_FALSE)
 		{
 			SDL_SetRelativeMouseMode(SDL_TRUE);
-			return true;
-		}
-	}
-	else if (evt.type == SDL_MOUSEMOTION)
-	{
-		if (SDL_GetRelativeMouseMode() == SDL_TRUE && clean_coral_num < 5)
-		{
-			glm::vec2 motion = glm::vec2(
-				evt.motion.xrel / float(window_size.y),
-				-evt.motion.yrel / float(window_size.y));
-			camera->transform->rotation = glm::normalize(
-				camera->transform->rotation * glm::angleAxis(-motion.x * camera->fovy, glm::vec3(0.0f, 1.0f, 0.0f)) * glm::angleAxis(motion.y * camera->fovy, glm::vec3(1.0f, 0.0f, 0.0f)));
-			// camera->transform->rotation.x = 0.4f;
-			// camera->transform->rotation.y = 0.4f;
-			// camera->transform->rotation.z = 0.6f;
-			// std::cout << "camera rotation x:" << camera->transform->rotation.x << "y:" << camera->transform->rotation.y << "z:" << camera->transform->rotation.z << std::endl;
 			return true;
 		}
 	}
@@ -314,30 +359,11 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 void PlayMode::update(float elapsed)
 {
-
-	// slowly rotates through [0,1):
-	/*
-	wobble += elapsed / 10.0f;
-	wobble -= std::floor(wobble); // prevent greater than 1?
-
-	hip->rotation = hip_base_rotation * glm::angleAxis(
-											glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))), // The sin of arc length is the angle
-											glm::vec3(0.0f, 1.0f, 0.0f));
-	upper_leg->rotation = upper_leg_base_rotation * glm::angleAxis(
-														glm::radians(7.0f * std::sin(wobble * 2.0f * 2.0f * float(M_PI))), //?
-														glm::vec3(0.0f, 0.0f, 1.0f));
-	lower_leg->rotation = lower_leg_base_rotation * glm::angleAxis(
-														glm::radians(10.0f * std::sin(wobble * 3.0f * 2.0f * float(M_PI))),
-														glm::vec3(0.0f, 0.0f, 1.0f));
-*/
+	// if clean all coral, win
 	if (clean_coral_num < 5)
 	{
 		float FishSpeed = 10.0f;
-		wobble += elapsed / 10.0f;
-		wobble -= std::floor(wobble);
-		glm::vec3 dolphinWPos = glm::mat4(dolphin->make_local_to_world()) * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		// fish move
-
+		//  fish move
 		for (auto fish : fishes)
 		{
 			fish.transform->position.x -= FishSpeed * elapsed / 10.0f;
@@ -346,7 +372,7 @@ void PlayMode::update(float elapsed)
 		// fish detect
 		for (auto fish : fishes)
 		{
-			if (distance(dolphinWPos, fish.transform->position) < 5)
+			if (distance(dolphin->position, fish.transform->position) < 5)
 			{
 				fish.transform->position.z = -25;
 				energy++;
@@ -359,7 +385,7 @@ void PlayMode::update(float elapsed)
 		// coral detect
 		for (auto coral : corals)
 		{
-			if (distance(dolphinWPos, coral.transform->position) < 10 && E.pressed && E_once)
+			if (distance(dolphin->position, coral.transform->position) < 10 && F.pressed && F_once)
 			{
 				if (energy > 0)
 				{
@@ -371,7 +397,7 @@ void PlayMode::update(float elapsed)
 					clean_coral_num++;
 					clean_corals[coral.index].transform->position.z = -13;
 					coral.transform->position.z = -25;
-					E_once = false;
+					F_once = false;
 				}
 				else
 				{
@@ -395,33 +421,72 @@ void PlayMode::update(float elapsed)
 			}
 		}
 
-		// move camera:
+		// move dolphin:
 		{
 			// combine inputs into a move:
 			constexpr float PlayerSpeed = 30.0f;
-			glm::vec2 move = glm::vec2(0.0f);
+			glm::vec3 new_dolphWPos = dolphin->position;
+			glm::quat new_dolphWRo = dolphin->rotation;
+			glm::vec3 move = glm::vec3(0.0f);
+			if (forward.pressed && !back.pressed)
+			{
+				move.x -= PlayerSpeed * elapsed;
+			}
+			if (back.pressed && !forward.pressed)
+			{
+				move.x += PlayerSpeed * elapsed;
+			}
 			if (left.pressed && !right.pressed)
-				move.x = -1.0f;
+			{
+				new_dolphWRo = glm::quat(1, 0, 0, PlayerSpeed * elapsed / 60.0f) * new_dolphWRo;
+			}
+
 			if (!left.pressed && right.pressed)
-				move.x = 1.0f;
+			{
+				new_dolphWRo = glm::quat(1, 0, 0, -PlayerSpeed * elapsed / 60.0f) * new_dolphWRo;
+			}
+
 			if (down.pressed && !up.pressed)
-				move.y = -1.0f;
+			{
+				move.z -= PlayerSpeed * elapsed;
+			}
+
 			if (!down.pressed && up.pressed)
-				move.y = 1.0f;
+			{
+				move.z += PlayerSpeed * elapsed;
+			}
 
 			// make it so that moving diagonally doesn't go faster:
-			if (move != glm::vec2(0.0f))
+			if (move != glm::vec3(0.0f))
 				move = glm::normalize(move) * PlayerSpeed * elapsed;
 
-			glm::mat4x3 frame = camera->transform->make_local_to_parent();
-			glm::vec3 frame_right = frame[0];
-			// glm::vec3 up = frame[1];
-			glm::vec3 frame_forward = -frame[2]; // back is +z, so -
+			glm::mat4x3 frame = dolphin->make_local_to_parent();
+			glm::vec3 frame_forward = frame[0];
+			glm::vec3 frame_right = -frame[1];
+			glm::vec3 frame_up = -frame[2]; // back is +z, so -
 
 			// Set border
-			glm::vec3 new_dolphWPos = dolphinWPos + move.x * frame_right + move.y * frame_forward;
-			if (new_dolphWPos.x > -135 && new_dolphWPos.x < 85 && new_dolphWPos.y > -65 && new_dolphWPos.y < 95 && new_dolphWPos.z < sea_surface->position.z - 5 && new_dolphWPos.z > ground->position.z + 5)
-				camera->transform->position += move.x * frame_right + move.y * frame_forward;
+			if (new_dolphWPos.x > -300 && new_dolphWPos.x < 220 && new_dolphWPos.y > -200 && new_dolphWPos.y < 220 && new_dolphWPos.z < 44 && new_dolphWPos.z > ground->position.z)
+				dolphin->position = dolphin->position + move.x * frame_forward + move.y * frame_right + move.z * frame_up;
+			else
+			{
+				if (new_dolphWPos.x < -300)
+					new_dolphWPos.x = -299;
+				if (new_dolphWPos.x > 220)
+					new_dolphWPos.x = 219;
+				if (new_dolphWPos.y < -200)
+					new_dolphWPos.y = -219;
+				if (new_dolphWPos.y > 220)
+					new_dolphWPos.y = 219;
+				if (new_dolphWPos.z > 44)
+					new_dolphWPos.z = 43;
+				if (new_dolphWPos.z < ground->position.z)
+					new_dolphWPos.z = ground->position.z + 1;
+				dolphin->position = new_dolphWPos;
+			}
+
+			dolphin->rotation = new_dolphWRo;
+			camera->transform->position = glm::vec3(dolphin->position.x + 45, dolphin->position.y, dolphin->position.z + 25);
 		}
 
 		// reset button press counters:
@@ -429,7 +494,7 @@ void PlayMode::update(float elapsed)
 		right.downs = 0;
 		up.downs = 0;
 		down.downs = 0;
-		E.downs = 0;
+		F.downs = 0;
 	}
 	else
 	{
@@ -466,7 +531,6 @@ void PlayMode::draw(glm::uvec2 const &drawable_size)
 
 		glDisable(GL_DEPTH_TEST);
 		float aspect = float(drawable_size.x) / float(drawable_size.y);
-
 		DrawLines lines(glm::mat4(
 			1.0f / aspect, 0.0f, 0.0f, 0.0f,
 			0.0f, 1.0f, 0.0f, 0.0f,
@@ -475,24 +539,33 @@ void PlayMode::draw(glm::uvec2 const &drawable_size)
 
 		// draw text
 		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse; E clean coral; Current Energy: " + std::to_string(energy) + ";",
+		lines.draw_text("Hold Mose & WASDQE moves; Escape ungrabs mouse; Catch fish to earn energy; F clean coral;",
 						glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
 						glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 						glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse; E clean coral; Current Energy: " + std::to_string(energy) + ";",
+		lines.draw_text("Hold Mose & WASDQE moves; Escape ungrabs mouse; Catch fish to earn energy; F clean coral;",
 						glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + +0.1f * H + ofs, 0.0),
 						glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 						glm::u8vec4(0xff, 0xff, 0xff, 0x00));
+		lines.draw_text("Current Energy: " + std::to_string(energy) + "; Cleaned Coral: " + std::to_string(clean_coral_num) + "/5;",
+						glm::vec3(-aspect + 0.1f * H + 2800.0f / drawable_size.x, -1.0 + 0.1f * H + 1300.0f / drawable_size.y, 0.0),
+						glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+						glm::u8vec4(0x00, 0x00, 0x00, 0x00));
+		lines.draw_text("Current Energy: " + std::to_string(energy) + "; Cleaned Coral: " + std::to_string(clean_coral_num) + "/5;",
+						glm::vec3(-aspect + 0.1f * H + +2800.0f / drawable_size.x + ofs, -1.0 + +0.1f * H + 1300.0f / drawable_size.y + ofs, 0.0),
+						glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
+						glm::u8vec4(0xff, 0x80, 0x00, 0x00));
+
 		if (show_warning)
 		{
 			constexpr float height = 0.09f;
 			float offset = 1300.0f / drawable_size.y;
-			lines.draw_text("Not Enough Energy!",
+			lines.draw_text("No Energy!",
 							glm::vec3(-aspect + 0.1f * height + offset - 302.0f / drawable_size.y, -1.0 + 0.1f * height + offset - 2.0f / drawable_size.y, 0.0),
 							glm::vec3(height, 0.0f, 0.0f), glm::vec3(0.0f, height, 0.0f),
 							glm::u8vec4(0x00, 0x00, 0x00, 0x00));
-			lines.draw_text("Not Enough Energy!",
+			lines.draw_text("No Energy!",
 							glm::vec3(-aspect + 0.1f * height + offset - 300.0f / drawable_size.y, -1.0 + +0.1f * height + offset, 0.0),
 							glm::vec3(height, 0.0f, 0.0f), glm::vec3(0.0f, height, 0.0f),
 							glm::u8vec4(0xff, 0x00, 0x00, 0x00));
@@ -503,6 +576,10 @@ void PlayMode::draw(glm::uvec2 const &drawable_size)
 		{
 			constexpr float height = 0.3f;
 			float offset = 500.0f / drawable_size.y;
+			lines.draw_text("You Saved the Ocean!",
+							glm::vec3(-aspect + 0.1f * height + 496.0f / drawable_size.y, -1.0 + +0.1f * height + 496.0f / drawable_size.y, 0.0),
+							glm::vec3(height, 0.0f, 0.0f), glm::vec3(0.0f, height, 0.0f),
+							glm::u8vec4(0xff, 0xff, 0xff, 0x00));
 			lines.draw_text("You Saved the Ocean!",
 							glm::vec3(-aspect + 0.1f * height + 498.0f / drawable_size.y, -1.0 + 0.1f * height + 498.0f / drawable_size.y, 0.0),
 							glm::vec3(height, 0.0f, 0.0f), glm::vec3(0.0f, height, 0.0f),

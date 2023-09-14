@@ -5,7 +5,8 @@
 
 Scene::Drawable::Pipeline lit_color_texture_program_pipeline;
 
-Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> LitColorTextureProgram const * {
+Load<LitColorTextureProgram> lit_color_texture_program(LoadTagEarly, []() -> LitColorTextureProgram const *
+													   {
 	LitColorTextureProgram *ret = new LitColorTextureProgram();
 
 	//----- build the pipeline template -----
@@ -40,13 +41,13 @@ Load< LitColorTextureProgram > lit_color_texture_program(LoadTagEarly, []() -> L
 	lit_color_texture_program_pipeline.textures[0].texture = tex;
 	lit_color_texture_program_pipeline.textures[0].target = GL_TEXTURE_2D;
 
-	return ret;
-});
+	return ret; });
 
-LitColorTextureProgram::LitColorTextureProgram() {
-	//Compile vertex and fragment shaders using the convenient 'gl_compile_program' helper function:
+LitColorTextureProgram::LitColorTextureProgram()
+{
+	// Compile vertex and fragment shaders using the convenient 'gl_compile_program' helper function:
 	program = gl_compile_program(
-		//vertex shader:
+		// vertex shader:
 		"#version 330\n"
 		"uniform mat4 OBJECT_TO_CLIP;\n"
 		"uniform mat4x3 OBJECT_TO_LIGHT;\n"
@@ -65,9 +66,8 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"	normal = NORMAL_TO_LIGHT * Normal;\n"
 		"	color = Color;\n"
 		"	texCoord = TexCoord;\n"
-		"}\n"
-	,
-		//fragment shader:
+		"}\n",
+		// fragment shader:
 		"#version 330\n"
 		"uniform sampler2D TEX;\n"
 		"uniform int LIGHT_TYPE;\n"
@@ -83,39 +83,45 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"void main() {\n"
 		"	vec3 n = normalize(normal);\n"
 		"	vec3 e;\n"
+		"vec4 lightFlux = vec4(LIGHT_ENERGY.x, LIGHT_ENERGY.y, LIGHT_ENERGY.z, 1.0f)*3;\n"
+		"float nl =0.0f;\n"
 		"	if (LIGHT_TYPE == 0) { //point light \n"
 		"		vec3 l = (LIGHT_LOCATION - position);\n"
 		"		float dis2 = dot(l,l);\n"
 		"		l = normalize(l);\n"
-		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
+		"		nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
 		"		e = nl * LIGHT_ENERGY;\n"
+		"		lightFlux*=  nl;\n"
 		"	} else if (LIGHT_TYPE == 1) { //hemi light \n"
 		"		e = (dot(n,-LIGHT_DIRECTION) * 0.5 + 0.5) * LIGHT_ENERGY;\n"
 		"	} else if (LIGHT_TYPE == 2) { //spot light \n"
 		"		vec3 l = (LIGHT_LOCATION - position);\n"
 		"		float dis2 = dot(l,l);\n"
 		"		l = normalize(l);\n"
-		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
+		"		nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
 		"		float c = dot(l,-LIGHT_DIRECTION);\n"
 		"		nl *= smoothstep(LIGHT_CUTOFF,mix(LIGHT_CUTOFF,1.0,0.1), c);\n"
 		"		e = nl * LIGHT_ENERGY;\n"
+		"		lightFlux*= nl;\n"
 		"	} else { //(LIGHT_TYPE == 3) //directional light \n"
 		"		e = max(0.0, dot(n,-LIGHT_DIRECTION)) * LIGHT_ENERGY;\n"
 		"	}\n"
-		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
+		"	float shininess = pow(1024.0,1.0 - normal.y);\n"
+		"	vec3 reflect = color.rgb/3.1415926+pow(nl,shininess)*(shininess+3.0)/(8.0)*(0.04+(1.0-0.04)*pow(1.0-max(0.0,nl),0.3));\n"
+		"	vec4 reflectance = vec4(reflect.x,reflect.y,reflect.z,1.0f);\n"
+		"	vec4 albedo = texture(TEX, texCoord) * color *lightFlux*reflectance*vec4(0.5f,0.8f,0.8f,1.0f);\n"
 		"	fragColor = vec4(e*albedo.rgb, albedo.a);\n"
-		"}\n"
-	);
-	//As you can see above, adjacent strings in C/C++ are concatenated.
-	// this is very useful for writing long shader programs inline.
+		"}\n");
+	// As you can see above, adjacent strings in C/C++ are concatenated.
+	//  this is very useful for writing long shader programs inline.
 
-	//look up the locations of vertex attributes:
+	// look up the locations of vertex attributes:
 	Position_vec4 = glGetAttribLocation(program, "Position");
 	Normal_vec3 = glGetAttribLocation(program, "Normal");
 	Color_vec4 = glGetAttribLocation(program, "Color");
 	TexCoord_vec2 = glGetAttribLocation(program, "TexCoord");
 
-	//look up the locations of uniforms:
+	// look up the locations of uniforms:
 	OBJECT_TO_CLIP_mat4 = glGetUniformLocation(program, "OBJECT_TO_CLIP");
 	OBJECT_TO_LIGHT_mat4x3 = glGetUniformLocation(program, "OBJECT_TO_LIGHT");
 	NORMAL_TO_LIGHT_mat3 = glGetUniformLocation(program, "NORMAL_TO_LIGHT");
@@ -126,19 +132,18 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
 
-
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 
-	//set TEX to always refer to texture binding zero:
-	glUseProgram(program); //bind program -- glUniform* calls refer to this program now
+	// set TEX to always refer to texture binding zero:
+	glUseProgram(program); // bind program -- glUniform* calls refer to this program now
 
-	glUniform1i(TEX_sampler2D, 0); //set TEX to sample from GL_TEXTURE0
+	glUniform1i(TEX_sampler2D, 0); // set TEX to sample from GL_TEXTURE0
 
-	glUseProgram(0); //unbind program -- glUniform* calls refer to ??? now
+	glUseProgram(0); // unbind program -- glUniform* calls refer to ??? now
 }
 
-LitColorTextureProgram::~LitColorTextureProgram() {
+LitColorTextureProgram::~LitColorTextureProgram()
+{
 	glDeleteProgram(program);
 	program = 0;
 }
-
