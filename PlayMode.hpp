@@ -49,6 +49,7 @@ struct PlayMode : Mode
 	{
 		int index = 0;
 		Scene::Transform *transform = nullptr;
+		glm::quat fish_rotation_base;
 	} Fish;
 	std::array<Fish, 10> fishes;
 
@@ -76,4 +77,5 @@ struct PlayMode : Mode
 	bool show_win = false;
 	int timer = 0;
 	bool starttimer = false;
+	float wobble = 0.0f;
 };

@@ -52,6 +52,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish0;
 			fish0.index = 0;
 			fish0.transform = &transform;
+			fish0.fish_rotation_base = fish0.transform->rotation;
 			fishes[0] = fish0;
 		}
 		else if (transform.name == "Fish1")
@@ -59,6 +60,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish1;
 			fish1.index = 1;
 			fish1.transform = &transform;
+			fish1.fish_rotation_base = fish1.transform->rotation;
 			fishes[1] = fish1;
 		}
 		else if (transform.name == "Fish2")
@@ -66,6 +68,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish2;
 			fish2.index = 2;
 			fish2.transform = &transform;
+			fish2.fish_rotation_base = fish2.transform->rotation;
 			fishes[2] = fish2;
 		}
 		else if (transform.name == "Fish3")
@@ -73,6 +76,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish3;
 			fish3.index = 3;
 			fish3.transform = &transform;
+			fish3.fish_rotation_base = fish3.transform->rotation;
 			fishes[3] = fish3;
 		}
 		else if (transform.name == "Fish4")
@@ -80,6 +84,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish4;
 			fish4.index = 4;
 			fish4.transform = &transform;
+			fish4.fish_rotation_base = fish4.transform->rotation;
 			fishes[4] = fish4;
 		}
 		else if (transform.name == "Fish5")
@@ -87,6 +92,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish5;
 			fish5.index = 5;
 			fish5.transform = &transform;
+			fish5.fish_rotation_base = fish5.transform->rotation;
 			fishes[5] = fish5;
 		}
 		else if (transform.name == "Fish6")
@@ -94,6 +100,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish6;
 			fish6.index = 6;
 			fish6.transform = &transform;
+			fish6.fish_rotation_base = fish6.transform->rotation;
 			fishes[6] = fish6;
 		}
 		else if (transform.name == "Fish7")
@@ -101,6 +108,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish7;
 			fish7.index = 7;
 			fish7.transform = &transform;
+			fish7.fish_rotation_base = fish7.transform->rotation;
 			fishes[7] = fish7;
 		}
 		else if (transform.name == "Fish8")
@@ -108,6 +116,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish8;
 			fish8.index = 8;
 			fish8.transform = &transform;
+			fish8.fish_rotation_base = fish8.transform->rotation;
 			fishes[8] = fish8;
 		}
 		else if (transform.name == "Fish9")
@@ -115,6 +124,7 @@ PlayMode::PlayMode() : scene(*hexapod_scene)
 			Fish fish9;
 			fish9.index = 9;
 			fish9.transform = &transform;
+			fish9.fish_rotation_base = fish9.transform->rotation;
 			fishes[9] = fish9;
 		}
 
@@ -323,14 +333,16 @@ void PlayMode::update(float elapsed)
 	if (clean_coral_num < 5)
 	{
 		float FishSpeed = 10.0f;
+		wobble += elapsed / 10.0f;
+		wobble -= std::floor(wobble); // prevent greater than 1?
 		glm::vec3 dolphinWPos = glm::mat4(dolphin->make_local_to_world()) * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		// fish move
-		/*
+
 		for (auto fish : fishes)
 		{
-			fish.transform->position.x += FishSpeed * elapsed / 10.0f;
-			fish.transform->rotation.z += FishSpeed * elapsed / 60.0f;
-		}*/
+			fish.transform->position.x -= FishSpeed * elapsed / 10.0f;
+			fish.transform->rotation = fish.fish_rotation_base * glm::angleAxis(glm::radians(80.0f * std::sin(wobble * 2.0f * float(M_PI))), glm::vec3(0.0f, 0.0f, 0.1f));
+		}
 		// fish detect
 		for (auto fish : fishes)
 		{
