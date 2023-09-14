@@ -334,7 +334,7 @@ void PlayMode::update(float elapsed)
 	{
 		float FishSpeed = 10.0f;
 		wobble += elapsed / 10.0f;
-		wobble -= std::floor(wobble); // prevent greater than 1?
+		wobble -= std::floor(wobble);
 		glm::vec3 dolphinWPos = glm::mat4(dolphin->make_local_to_world()) * glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		// fish move
 
